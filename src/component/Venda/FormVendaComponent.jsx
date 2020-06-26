@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import VendaDataService from "../../service/VendaDataService"
+import ProdutoDataService from "../../service/ProdutoDataService"
 import { TextField, Button, Typography, 
          TableContainer, Table, TableBody, 
          TableCell, TableHead, TableRow, 
@@ -29,15 +30,15 @@ class FormVendaComponent extends Component {
                 itens: [],
                 valorTotal: 0
             },
-            dialogEditarProduto: false,
+            dialogEditarQuantidade: false,
             dialogAdicionarItem: false,
-            itemSelecionado: []
+            itemSelecionado: [],
+            produtos: []
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.voltar = this.voltar.bind(this);
-        this.adicionarItem = this.adicionarItem.bind(this);
         this.removerItem = this.removerItem.bind(this);
         this.dialogEditarQuantidadeHandleClickOpen = this.dialogEditarQuantidadeHandleClickOpen.bind(this);
         this.dialogEditarQuantidadeHandleClose = this.dialogEditarQuantidadeHandleClose.bind(this);
@@ -53,12 +54,16 @@ class FormVendaComponent extends Component {
                 this.setState({venda: response.data});
             });
         }
+        ProdutoDataService.listarProdutos()
+        .then(response => {
+            this.setState({produtos: response.data});
+        })
     }
 
     handleSubmit(event) {
         event.preventDefault();
-        VendaDataService.novoVenda(this.state.venda);
-        //.then(() => this.voltar());
+        VendaDataService.novoVenda(this.state.venda)
+        .then(() => this.voltar());
     }
 
     voltar() {
@@ -74,10 +79,6 @@ class FormVendaComponent extends Component {
                 [tempVar1]: tempVar2
             }
         }));
-    }
-
-    adicionarItem() {
-        console.log("In Work");
     }
 
     removerItem(item) {
@@ -102,7 +103,7 @@ class FormVendaComponent extends Component {
             tempValorTotal += (item.quantidade * item.produto.valor);
         });
         this.setState(prevState => ({
-            dialogEditarProduto: false,
+            dialogEditarQuantidade: false,
             venda: {
                 ...prevState.venda,
                 valorTotal: tempValorTotal
@@ -113,11 +114,45 @@ class FormVendaComponent extends Component {
     dialogEditarQuantidadeHandleClickOpen(item) {
         this.setState(() => ({
             itemSelecionado: item,
-            dialogEditarProduto: true
+            dialogEditarQuantidade: true
         }));
     };
 
-    dialogAdicionarItemHandleClose() {
+    dialogAdicionarItemHandleClose(selecionado, quantidade) {
+        if(selecionado !== '' && quantidade > 0) {
+            let index = -1;
+            let tempItens = this.state.venda.itens;
+            let tempItem;
+
+            tempItens.forEach(item => {
+                if(item.produto.codigo === selecionado.codigo) {
+                    index = tempItens.indexOf(item);
+                    tempItem = item;
+                }
+            });
+
+            if(index === -1) {
+                tempItem = {
+                    idVenda: this.state.venda.id,
+                    produto: selecionado,
+                    quantidade: quantidade
+                };
+                tempItens.push(tempItem);
+            } else {
+                tempItem.quantidade += quantidade;
+            }
+
+            let tempValorTotal = this.state.venda.valorTotal + (tempItem.produto.valor * quantidade);
+
+            this.setState(prevState => ({
+                venda: {
+                    ...prevState.venda,
+                    itens: tempItens,
+                    valorTotal: tempValorTotal
+                }
+            }))
+        }
+
         this.setState(() => ({
             dialogAdicionarItem: false
         }));
@@ -138,28 +173,14 @@ class FormVendaComponent extends Component {
                 </Typography>
                 <div>
                     <form onSubmit={this.handleSubmit}>
-                        { 
-                            this.novoVenda
-                        ?
-                            <TextField name="id" 
-                                label="Id"
-                                type="number"
-                                value={this.state.venda.id} 
-                                onChange={this.handleChange} 
-                                margin="dense" 
-                                variant="outlined"
-                                InputLabelProps={{ shrink: true }}
-                            />
-                        :
-                            <TextField disabled name="id" 
-                                label="Id" 
-                                type="number"
-                                value={this.state.venda.id} 
-                                margin="dense" 
-                                variant="outlined" 
-                                InputLabelProps={{ shrink: true }}
-                            />
-                        }
+                        <TextField disabled name="id" 
+                            label="Id" 
+                            type="number"
+                            value={this.state.venda.id} 
+                            margin="dense" 
+                            variant="outlined" 
+                            InputLabelProps={{ shrink: true }}
+                        />                        
                         
                         <TextField name="cpfCliente" 
                             label="CPF Cliente"
@@ -238,8 +259,8 @@ class FormVendaComponent extends Component {
                         <Button variant="contained" color="secondary" onClick={this.voltar}>Voltar</Button>
                     </form>
                 </div>
-                <DialogEditarQuantidade item={this.state.itemSelecionado} open={this.state.dialogEditarProduto} onClose={this.dialogEditarQuantidadeHandleClose} />
-                <DialogAdicionarItem open={this.state.dialogAdicionarItem} onClose={this.dialogAdicionarItemHandleClose}/>
+                <DialogEditarQuantidade item={this.state.itemSelecionado} open={this.state.dialogEditarQuantidade} onClose={this.dialogEditarQuantidadeHandleClose} />
+                <DialogAdicionarItem open={this.state.dialogAdicionarItem} produtos={this.state.produtos} onClose={this.dialogAdicionarItemHandleClose}/>
             </div>
         );
     }

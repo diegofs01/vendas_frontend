@@ -1,31 +1,40 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, 
-         DialogActions, TableContainer, Table,
-         TableHead, TableRow, TableCell,
-         TableBody, Paper, Button } from '@material-ui/core';
-import { Add, Remove, Restore } from '@material-ui/icons'
-import ProdutoDataService from '../../service/ProdutoDataService';
+         DialogActions, Button, TextField,
+         Typography, Select, MenuItem } from '@material-ui/core';
 
 export default function DialogAdicionarItem(props) {
 
     const [produtos, setProdutos] = React.useState([]);
+    const [selecionado, setSelecionado] = React.useState('');
+    const [quantidade, setQuantidade] = React.useState(0);
     let onClose = props.onClose;
     let open = props.open;
 
     const handleOnEntering = () => {
-        ProdutoDataService.listarProdutos()
-        .then(response => {
-            console.log(response.data);
-            setProdutos(response.data);
-        })
-    };
+        setProdutos(props.produtos);
+    }
 
     const handleClose = () => {
-        onClose();
+        onClose(undefined, 0);
     };
 
+    const handleCloseConfirm = () => {
+        onClose(selecionado, quantidade);
+        setSelecionado('');
+        setQuantidade(0);
+    };
+
+    const handleChange = (event) => {
+        if(event.target.name === "selecionado")
+            setSelecionado(event.target.value);
+
+        if(event.target.name === "quantidade")
+            setQuantidade(Number.parseInt(event.target.value));
+    }
+
     return (
-        <Dialog onClose={handleClose} onEnter={handleOnEntering} open={open}>
+        <Dialog onClose={handleClose} onEntering={handleOnEntering} open={open}>
             <DialogTitle>Adicionar Produto</DialogTitle>
             <DialogContent>
                 {
@@ -33,33 +42,37 @@ export default function DialogAdicionarItem(props) {
                 ?
                     <p>Carregando dados, por favor aguarde!</p>   
                 :
-                    <TableContainer component={Paper}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Código</TableCell>
-                                    <TableCell>Nome</TableCell>
-                                    <TableCell>Unidade</TableCell>
-                                    <TableCell>Valor</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {produtos.map((produto) => (
-                                    <TableRow key={produto.codigo}>
-                                        <TableCell component="th" scope="tow">{produto.codigo}</TableCell>
-                                        <TableCell>{produto.nome}</TableCell>
-                                        <TableCell>{produto.unidade}</TableCell>
-                                        <TableCell>{produto.valor}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                    <div>
+                        <Typography variant="overline">
+                            Disponíveis:
+                        </Typography>
+                        <br/>
+                        <Select
+                            name="selecionado"
+                            value={selecionado}
+                            onChange={handleChange}
+                        >
+                            {produtos.map((produto) => (
+                                <MenuItem key={produto.codigo} value={produto}>{produto.nome}, ${produto.valor}</MenuItem>
+                            ))}
+                        </Select>
+                        <br/>
+                        <TextField name="quantidade" 
+                            label="quantidade"  
+                            type="number"
+                            value={quantidade} 
+                            onChange={handleChange}  
+                            InputLabelProps={{ shrink: true }}
+                        /> 
+                    </div>
                 }
             </DialogContent>
             <DialogActions>
                 <Button variant="contained" color="secondary" onClick={handleClose}>
                     Cancelar
+                </Button>
+                <Button variant="contained" color="primary" onClick={handleCloseConfirm}>
+                    Confirmar
                 </Button>
             </DialogActions>
         </Dialog>

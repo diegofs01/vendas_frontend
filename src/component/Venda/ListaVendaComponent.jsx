@@ -24,9 +24,6 @@ class ListaVendaComponent extends Component {
         VendaDataService.listarVendas()
         .then(
             response => {
-                response.data.forEach(venda => {
-                    console.log(venda);
-                });
                 this.setState({vendas: response.data});
             }
         );

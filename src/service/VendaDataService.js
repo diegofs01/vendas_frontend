@@ -13,15 +13,7 @@ class VendaDataService {
     }
 
     novoVenda(venda) {
-        console.log("novoVenda");
-        console.log(venda);
-        //return axios.post(`${VENDA_API_URL}/novo`, venda);
-    }
-
-    atualizarVenda(venda) {
-        console.log("atualizarVenda");
-        console.log(venda);
-        //return axios.put(`${VENDA_API_URL}/editar`, venda);
+        return axios.post(`${VENDA_API_URL}/novo`, venda);
     }
 }
 

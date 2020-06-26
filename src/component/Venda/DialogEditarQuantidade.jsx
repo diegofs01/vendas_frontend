@@ -18,7 +18,6 @@ export default function DialogEditarQuantidade(props) {
 
     const handleClose = () => {
         props.item.quantidade = quantidade;
-        console.log(props.item);
         onClose(props.item);
     };
 
