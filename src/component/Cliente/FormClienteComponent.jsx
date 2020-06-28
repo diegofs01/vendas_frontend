@@ -1,17 +1,35 @@
 import React, { Component } from "react"
 import ClienteDataService from "../../service/ClienteDataService"
-import { TextField, Switch, Button, Grid, Typography } from "@material-ui/core"
+import { TextField, Switch, Button, 
+         Grid, Typography, Paper, 
+         Radio, RadioGroup, FormControlLabel, 
+         Select, MenuItem, InputLabel, FormLabel } from "@material-ui/core"
 
 class FormClienteComponent extends Component {
 
     novoCliente = true;
+    ufList = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
 
     constructor(props) {
         super(props);
 
         this.state = {
             erros: [],
-            cliente: []
+            cliente: {
+                cpf: '',
+                nome: '',
+                dataNascimento: new Date().toISOString().substring(0,10),
+                sexo: '',
+                cep: '',
+                logradouro: '',
+                numero: 0,
+                complemento: '',
+                bairro: '',
+                cidade: '',
+                uf: '',
+                saldo: 0.0,
+                ativo: true
+            }
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -21,28 +39,24 @@ class FormClienteComponent extends Component {
         this.voltar = this.voltar.bind(this);
     }
 
-    componentWillMount() {
+    componentDidMount() {
 
         if (this.props.match.params.id === undefined) 
             this.novoCliente = true;
         else
             this.novoCliente = false;
         
-        if(this.novoCliente) {
-            this.setState({cliente: {
-                cpf: '',
-                nome: '',
-                saldo: 0.0,
-                ativo: true
-            }
-            });
-        } else {
+        if(!this.novoCliente) {
             ClienteDataService.buscarCliente(this.props.match.params.id)
             .then(response => {
+                console.log(response.data);
+
+                if(response.data.dataNascimento === null)
+                    response.data.dataNascimento = new Date().toISOString().substring(0,10);
+
                 this.setState({cliente: response.data});
             });
         }
-        
     }
 
     validate(values) {
@@ -133,13 +147,20 @@ class FormClienteComponent extends Component {
     }
 
     handleChange(event) {
+
+        console.log(event.target);
+
         let tempVar1 = event.target.name;
         let tempVar2;
 
         if(tempVar1 === "ativo") {
             tempVar2 = event.target.checked;
         } else {
-            tempVar2 = event.target.value;
+            if(event.target.type === "number") {
+                tempVar2 = Number.parseInt(event.target.value);
+            } else {
+                tempVar2 = event.target.value;
+            }
         }
 
         this.setState(prevState => ({
@@ -165,56 +186,156 @@ class FormClienteComponent extends Component {
                     </ul>
                     
                     <form onSubmit={this.handleSubmit}>
-                        { 
-                            this.novoCliente
-                        ?
-                            <TextField name="cpf" 
-                                label="CPF" 
-                                value={this.state.cliente.cpf} 
+                    <Paper elevation={1}>
+
+                        <Grid container direction="column" justify="center" alignItems="center">
+                            { 
+                                this.novoCliente
+                            ?
+                                <TextField name="cpf" 
+                                    label="CPF" 
+                                    value={this.state.cliente.cpf} 
+                                    onChange={this.handleChange} 
+                                    margin="dense" 
+                                    variant="outlined"
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                            :
+                                <TextField disabled name="cpf" 
+                                    label="CPF" 
+                                    value={this.state.cliente.cpf} 
+                                    margin="dense" 
+                                    variant="outlined" 
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                            }
+
+                            <TextField name="nome" 
+                                label="Nome"
+                                value={this.state.cliente.nome} 
+                                onChange={this.handleChange} 
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />   
+
+                            <TextField name="dataNascimento" 
+                                label="Data de Nascimento"
+                                type="date"
+                                value={this.state.cliente.dataNascimento} 
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
                                 InputLabelProps={{ shrink: true }}
                             />
-                        :
-                            <TextField disabled name="cpf" 
-                                label="CPF" 
-                                value={this.state.cliente.cpf} 
+                        </Grid>
+                        <Grid container direction="row" justify="center" alignItems="center">    
+                            <FormLabel>Sexo</FormLabel>
+                            <RadioGroup row name="sexo" value={this.state.cliente.sexo} onChange={this.handleChange}>
+                                <FormControlLabel value="Masculino" control={<Radio />} label="Masculino" />
+                                <FormControlLabel value="Feminino" control={<Radio />} label="Feminino" />
+                            </RadioGroup>
+                        </Grid>
+
+                        <Grid container direction="row" justify="center" alignItems="center">
+                            <TextField name="cep" 
+                                label="CEP"
+                                value={this.state.cliente.cep} 
+                                onChange={this.handleChange} 
                                 margin="dense" 
-                                variant="outlined" 
+                                variant="outlined"
                                 InputLabelProps={{ shrink: true }}
                             />
-                        }
-                        <br />
-                        <TextField name="nome" 
-                            label="Nome"
-                            value={this.state.cliente.nome} 
-                            onChange={this.handleChange} 
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <br /> 
-                        <TextField name="saldo" 
-                            label="Saldo" 
-                            type="number" 
-                            value={this.state.cliente.saldo}  
-                            onChange={this.handleChange}  
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}                            
-                        /> 
-                        <Grid container alignItems="center">
+
+                            <TextField name="logradouro" 
+                                label="Logradouro"
+                                value={this.state.cliente.logradouro} 
+                                onChange={this.handleChange} 
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+
+                        <Grid container direction="row" justify="center" alignItems="center">
+                            <TextField name="numero" 
+                                label="Numero" 
+                                type="number" 
+                                value={this.state.cliente.numero}  
+                                onChange={this.handleChange}  
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}                            
+                            /> 
+
+                            <TextField name="complemento" 
+                                label="Complemento"
+                                value={this.state.cliente.complemento} 
+                                onChange={this.handleChange} 
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+
+                        <Grid container direction="row" justify="center" alignItems="center">
+                            <TextField name="bairro" 
+                                label="Bairro"
+                                value={this.state.cliente.bairro} 
+                                onChange={this.handleChange} 
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />
+
+                            <TextField name="cidade" 
+                                label="Cidade"
+                                value={this.state.cliente.cidade} 
+                                onChange={this.handleChange} 
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        
+                        <Grid container direction="row" justify="center" alignItems="center">
+                            <InputLabel id="uf">UF</InputLabel>
+                            <Select name="uf"
+                                labelId="uf"
+                                value={this.state.cliente.uf}
+                                onChange={this.handleChange}>
+                                {this.ufList.map((uf) => (
+                                    <MenuItem key={uf} value={uf}>{uf}</MenuItem>
+                                ))}
+                            </Select>
+                        </Grid>
+
+                        <Grid container direction="column" justify="flex-start" alignItems="center">
+                            <TextField name="saldo" 
+                                label="Saldo" 
+                                type="number" 
+                                value={this.state.cliente.saldo}  
+                                onChange={this.handleChange}  
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}                            
+                            /> 
+                        </Grid>
+
+                        <Grid container justify="center" alignItems="center">
                             <Grid item>Ativo?</Grid>
                             <Grid item>
                                 <Switch checked={this.state.cliente.ativo} onChange={this.handleChange} name="ativo"/>
                             </Grid>
                             <Grid item>{this.state.cliente.ativo ? 'Sim' : 'Não'}</Grid>
                         </Grid>
-                        
-                        <br />
+                    </Paper>
+
+                    <Grid container justify="center" alignItems="center">
                         <Button variant="contained" color="primary" type="submit">Salvar</Button>
                         <Button variant="contained" color="secondary" onClick={this.voltar}>Voltar</Button>
+                    </Grid>
+
                     </form>
                 </div>
             </div>
