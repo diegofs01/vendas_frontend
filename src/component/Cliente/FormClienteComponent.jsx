@@ -4,6 +4,8 @@ import { TextField, Switch, Button,
          Grid, Typography, Paper, 
          Radio, RadioGroup, FormControlLabel, 
          Select, MenuItem, InputLabel, FormLabel } from "@material-ui/core"
+import InputMask from "react-input-mask"
+import NumberFormat from "react-number-format"
 
 class FormClienteComponent extends Component {
 
@@ -49,8 +51,6 @@ class FormClienteComponent extends Component {
         if(!this.novoCliente) {
             ClienteDataService.buscarCliente(this.props.match.params.id)
             .then(response => {
-                console.log(response.data);
-
                 if(response.data.dataNascimento === null)
                     response.data.dataNascimento = new Date().toISOString().substring(0,10);
 
@@ -147,9 +147,6 @@ class FormClienteComponent extends Component {
     }
 
     handleChange(event) {
-
-        console.log(event.target);
-
         let tempVar1 = event.target.name;
         let tempVar2;
 
@@ -192,22 +189,21 @@ class FormClienteComponent extends Component {
                             { 
                                 this.novoCliente
                             ?
-                                <TextField name="cpf" 
-                                    label="CPF" 
+                                <InputMask name="cpf"
+                                mask={"999.999.999-99"} 
+                                value={this.state.cliente.cpf} 
+                                onChange={this.handleChange} 
+                                >
+                                    {(inputProps) => <TextField {...inputProps} label="CPF" margin="dense" variant="outlined"/>}
+                                </InputMask>
+                            :
+                                <InputMask disabled name="cpf"
+                                    mask={"999.999.999-99"} 
                                     value={this.state.cliente.cpf} 
                                     onChange={this.handleChange} 
-                                    margin="dense" 
-                                    variant="outlined"
-                                    InputLabelProps={{ shrink: true }}
-                                />
-                            :
-                                <TextField disabled name="cpf" 
-                                    label="CPF" 
-                                    value={this.state.cliente.cpf} 
-                                    margin="dense" 
-                                    variant="outlined" 
-                                    InputLabelProps={{ shrink: true }}
-                                />
+                                >
+                                    {(inputProps) => <TextField {...inputProps} label="CPF" margin="dense" variant="outlined"/>}
+                                </InputMask>
                             }
 
                             <TextField name="nome" 
@@ -216,7 +212,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}
                             />   
 
                             <TextField name="dataNascimento" 
@@ -226,7 +221,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}
                             />
                         </Grid>
                         <Grid container direction="row" justify="center" alignItems="center">    
@@ -238,14 +232,13 @@ class FormClienteComponent extends Component {
                         </Grid>
 
                         <Grid container direction="row" justify="center" alignItems="center">
-                            <TextField name="cep" 
-                                label="CEP"
+                            <InputMask name="cep"
+                                mask={"99999-999"} 
                                 value={this.state.cliente.cep} 
-                                onChange={this.handleChange} 
-                                margin="dense" 
-                                variant="outlined"
-                                InputLabelProps={{ shrink: true }}
-                            />
+                                onChange={this.handleChange}  
+                            >
+                                {(inputProps) => <TextField {...inputProps} label="CEP" margin="dense" variant="outlined"/>}
+                            </InputMask>
 
                             <TextField name="logradouro" 
                                 label="Logradouro"
@@ -253,7 +246,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}
                             />
                         </Grid>
 
@@ -264,8 +256,7 @@ class FormClienteComponent extends Component {
                                 value={this.state.cliente.numero}  
                                 onChange={this.handleChange}  
                                 margin="dense" 
-                                variant="outlined"
-                                InputLabelProps={{ shrink: true }}                            
+                                variant="outlined"                           
                             /> 
 
                             <TextField name="complemento" 
@@ -274,7 +265,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}
                             />
                         </Grid>
 
@@ -285,7 +275,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}
                             />
 
                             <TextField name="cidade" 
@@ -294,7 +283,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}
                             />
                         </Grid>
                         
@@ -311,15 +299,17 @@ class FormClienteComponent extends Component {
                         </Grid>
 
                         <Grid container direction="column" justify="flex-start" alignItems="center">
-                            <TextField name="saldo" 
-                                label="Saldo" 
-                                type="number" 
+                            <NumberFormat name="saldo"
                                 value={this.state.cliente.saldo}  
                                 onChange={this.handleChange}  
-                                margin="dense" 
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                allowNegative={false}
+                                customInput={TextField}
+                                label="Saldo"
+                                margin="dense"
                                 variant="outlined"
-                                InputLabelProps={{ shrink: true }}                            
-                            /> 
+                            />
                         </Grid>
 
                         <Grid container justify="center" alignItems="center">

@@ -13,6 +13,8 @@ class ClienteDataService {
     }
 
     novoCliente(cliente) {
+        cliente.cpf = cliente.cpf.replace(/[-.]/g, "");
+        cliente.cep = cliente.cep.replace(/[-]/g, "");
         return axios.post(`${CLIENTE_API_URL}/cliente/novo`, cliente);
     }
 }
