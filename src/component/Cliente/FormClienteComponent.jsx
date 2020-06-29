@@ -53,6 +53,8 @@ class FormClienteComponent extends Component {
             .then(response => {
                 if(response.data.dataNascimento === null)
                     response.data.dataNascimento = new Date().toISOString().substring(0,10);
+                if(response.data.uf === null)
+                    response.data.uf = '';
 
                 this.setState({cliente: response.data});
             });
@@ -64,7 +66,7 @@ class FormClienteComponent extends Component {
         let listaErros = [];
         let soma, digito;
 
-        values.cpf = values.cpf.replace(/[^0-9]/g, '');
+        values.cpf = values.cpf.replace(/[-.]/g, "");
 
         //comprimento
         if(values.cpf.length !== 11) {            
