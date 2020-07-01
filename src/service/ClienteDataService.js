@@ -27,6 +27,10 @@ class ClienteDataService {
         cpf = cpf.replace(/[-.]/g, "");
         return axios.post(`${CLIENTE_API_URL}/desativar/${cpf}`);
     }
+
+    listarClientesAtivos() {
+        return axios.get(`${CLIENTE_API_URL}/ativos`);
+    }
 }
 
 export default new ClienteDataService()

@@ -13,6 +13,7 @@ class VendaDataService {
     }
 
     novoVenda(venda) {
+        venda.dataVenda = new Date(venda.dataVenda).toISOString();
         return axios.post(`${VENDA_API_URL}/novo`, venda);
     }
 }

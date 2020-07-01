@@ -174,7 +174,7 @@ class FormClienteComponent extends Component {
 
         return (
             <div>
-                <Typography variant="h3">
+                <Typography variant="h6">
                     {this.novoCliente ? 'Novo Cliente' : 'Editar Cliente'}
                 </Typography>
                 <div>
@@ -186,7 +186,6 @@ class FormClienteComponent extends Component {
                     
                     <form onSubmit={this.handleSubmit}>
                     <Paper elevation={1}>
-
                         <Grid container direction="column" justify="center" alignItems="center">
                             { 
                                 this.novoCliente

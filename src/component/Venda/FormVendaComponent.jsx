@@ -1,14 +1,17 @@
 import React, { Component } from "react"
 import VendaDataService from "../../service/VendaDataService"
 import ProdutoDataService from "../../service/ProdutoDataService"
+import ClienteDataService from "../../service/ClienteDataService"
 import { TextField, Button, Typography, 
          TableContainer, Table, TableBody, 
          TableCell, TableHead, TableRow, 
-         Paper, IconButton
+         Paper, IconButton, Grid
         } from "@material-ui/core"
 import { Add, Delete, Edit } from '@material-ui/icons'
 import DialogEditarQuantidade from './DialogEditarQuantidade'
 import DialogAdicionarItem from './DialogAdicionarItem'
+import NumberFormat from "react-number-format"
+import InputMask from "react-input-mask"
 
 class FormVendaComponent extends Component {
 
@@ -33,7 +36,10 @@ class FormVendaComponent extends Component {
             dialogEditarQuantidade: false,
             dialogAdicionarItem: false,
             itemSelecionado: [],
-            produtos: []
+            produtos: [],
+            clientes: [{
+                cpf: '', nome: 'Nulo'
+            }]
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -50,13 +56,21 @@ class FormVendaComponent extends Component {
         if(!this.novoVenda) {
             VendaDataService.buscarVenda(this.props.match.params.id)
             .then(response => {
-                response.data.dataVenda = new Date(response.data.dataVenda).toISOString().replace("Z", "");
+                let tempDate = new Date(response.data.dataVenda);
+                tempDate.setHours(tempDate.getHours() - 3);
+                response.data.dataVenda = tempDate.toISOString().replace("Z", "");
+                
                 this.setState({venda: response.data});
             });
         }
         ProdutoDataService.listarProdutos()
         .then(response => {
             this.setState({produtos: response.data});
+        });
+        ClienteDataService.listarClientesAtivos()
+        .then(response => {
+            console.log(response.data);
+            this.setState({clientes: response.data});
         })
     }
 
@@ -73,6 +87,7 @@ class FormVendaComponent extends Component {
     handleChange(event) {
         let tempVar1 = event.target.name;
         let tempVar2 = event.target.value;
+
         this.setState(prevState => ({
             venda: {
                 ...prevState.venda,
@@ -173,90 +188,98 @@ class FormVendaComponent extends Component {
                 </Typography>
                 <div>
                     <form onSubmit={this.handleSubmit}>
-                        <TextField disabled name="id" 
-                            label="Id" 
-                            type="number"
-                            value={this.state.venda.id} 
-                            margin="dense" 
-                            variant="outlined" 
-                            InputLabelProps={{ shrink: true }}
-                        />                        
-                        
-                        <TextField name="cpfCliente" 
-                            label="CPF Cliente"
-                            value={this.state.venda.cpfCliente} 
-                            onChange={this.handleChange} 
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <br />
-
-                        <TextField name="dataVenda" 
-                            label="Data de Venda"  
-                            type="datetime-local"
-                            value={this.state.venda.dataVenda} 
-                            onChange={this.handleChange}  
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        /> 
-                        
-                        <TextField name="valorTotal" 
-                            label="valorTotal"  
-                            type="number"
-                            value={this.state.venda.valorTotal} 
-                            onChange={this.handleChange}  
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        /> 
-                        
-                        <br />
-
-                        <TableContainer component={Paper}>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>IdItem</TableCell>
-                                        <TableCell>Nome</TableCell>
-                                        <TableCell>Preço</TableCell>
-                                        <TableCell>Quantidade</TableCell>
-                                        <TableCell>Unidade</TableCell>
-                                        <TableCell>Opções</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {this.state.venda.itens.map((item) => (
-                                        <TableRow key={item.idItem}>
-                                            <TableCell component="th" scope="tow">{item.idItem}</TableCell>
-                                            <TableCell>{item.produto.nome}</TableCell>
-                                            <TableCell>{item.produto.valor}</TableCell>
-                                            <TableCell>{item.quantidade}</TableCell>
-                                            <TableCell>{item.produto.unidade}</TableCell>
-                                            <TableCell>
-                                                <IconButton onClick={() => this.dialogEditarQuantidadeHandleClickOpen(item)}>
-                                                    <Edit />                                            
-                                                </IconButton>
-                                                <IconButton onClick={() => this.removerItem(item)}>
-                                                    <Delete />                                            
-                                                </IconButton>
-                                            </TableCell>
+                    <Paper elevation={1}>
+                    <Grid container direction="column" justify="center" alignItems="center">
+                        <Grid item>
+                            <TextField disabled name="id" 
+                                label="Id" 
+                                type="number"
+                                value={this.state.venda.id} 
+                                margin="dense" 
+                                variant="outlined" 
+                                InputLabelProps={{ shrink: true }}
+                            />                        
+                        </Grid>
+                        <Grid item>
+                            <InputMask name="cpfCliente"
+                                mask={"999.999.999-99"} 
+                                value={this.state.venda.cpfCliente} 
+                                onChange={this.handleChange} 
+                            >
+                                {(inputProps) => <TextField {...inputProps} label="Cliente" margin="dense" variant="outlined"/>}
+                            </InputMask>
+                        </Grid>
+                        <Grid item>
+                            <TextField name="dataVenda" 
+                                label="Data de Venda"  
+                                type="datetime-local"
+                                value={this.state.venda.dataVenda} 
+                                onChange={this.handleChange}  
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            /> 
+                        </Grid>
+                        <Grid item>  
+                            <NumberFormat name="valorTotal"
+                                value={this.state.venda.valorTotal}  
+                                onChange={this.handleChange}  
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                allowNegative={false}
+                                customInput={TextField}
+                                label="Valor Total"
+                                margin="dense"
+                                variant="outlined"
+                            />
+                        </Grid>
+                        <Grid item>
+                            <TableContainer component={Paper}>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>IdItem</TableCell>
+                                            <TableCell>Nome</TableCell>
+                                            <TableCell>Preço</TableCell>
+                                            <TableCell>Quantidade</TableCell>
+                                            <TableCell>Unidade</TableCell>
+                                            <TableCell>Opções</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                            <Typography variant="overline" display="block" gutterBottom>
-                                Quantidade de Produtos: {this.state.venda.itens.length}
-                                <IconButton size="small" onClick={() => this.dialogAdicionarItemHandleClickOpen()}>
-                                    <Add />                                            
-                                </IconButton>
-                            </Typography>
-                        </TableContainer>
-                                    
-                        <br />
-                        <Button variant="contained" color="primary" type="submit">Salvar</Button>
-                        <Button variant="contained" color="secondary" onClick={this.voltar}>Voltar</Button>
+                                    </TableHead>
+                                    <TableBody>
+                                        {this.state.venda.itens.map((item) => (
+                                            <TableRow key={item.idItem}>
+                                                <TableCell component="th" scope="tow">{item.idItem}</TableCell>
+                                                <TableCell>{item.produto.nome}</TableCell>
+                                                <TableCell>{item.produto.valor}</TableCell>
+                                                <TableCell>{item.quantidade}</TableCell>
+                                                <TableCell>{item.produto.unidade}</TableCell>
+                                                <TableCell>
+                                                    <IconButton onClick={() => this.dialogEditarQuantidadeHandleClickOpen(item)}>
+                                                        <Edit />                                            
+                                                    </IconButton>
+                                                    <IconButton onClick={() => this.removerItem(item)}>
+                                                        <Delete />                                            
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <Typography variant="overline" display="block" gutterBottom>
+                                    Quantidade de Produtos: {this.state.venda.itens.length}
+                                    <IconButton size="small" onClick={() => this.dialogAdicionarItemHandleClickOpen()}>
+                                        <Add />                                            
+                                    </IconButton>
+                                </Typography>
+                            </TableContainer>
+                        </Grid>
+                        <Grid item>
+                            <Button variant="contained" color="primary" type="submit">Salvar</Button>
+                            <Button variant="contained" color="secondary" onClick={this.voltar}>Voltar</Button>
+                        </Grid>
+                    </Grid>
+                    </Paper>
                     </form>
                 </div>
                 <DialogEditarQuantidade item={this.state.itemSelecionado} open={this.state.dialogEditarQuantidade} onClose={this.dialogEditarQuantidadeHandleClose} />

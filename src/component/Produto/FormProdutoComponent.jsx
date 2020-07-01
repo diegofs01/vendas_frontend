@@ -1,6 +1,8 @@
 import React, { Component } from "react"
 import ProdutoDataService from "../../service/ProdutoDataService"
-import { TextField, Button, Typography } from "@material-ui/core";
+import { TextField, Button, Typography, 
+         Paper, Grid } from "@material-ui/core";
+import NumberFormat from "react-number-format";
 
 class FormProdutoComponent extends Component {
 
@@ -67,11 +69,14 @@ class FormProdutoComponent extends Component {
 
         return (
             <div>
-                <Typography variant="h3">
-                    {this.novoProduto ? 'Novo Produto' : 'Editar Produto'}
+                <Typography variant="h6" align="center">
+                    {this.novoProduto ? 'Novo Produto' : `Editar Produto ${this.state.produto.codigo} - ${this.state.produto.nome}`}
                 </Typography>
                 <div>
                     <form onSubmit={this.handleSubmit}>
+                    <Paper elevation={1}>
+                    <Grid container direction="column" justify="center" alignItems="center" spacing={5}>
+                        <Grid item>
                         { 
                             this.novoProduto
                         ?
@@ -92,37 +97,46 @@ class FormProdutoComponent extends Component {
                                 InputLabelProps={{ shrink: true }}
                             />
                         }
-                        <br />
-                        <TextField name="nome" 
-                            label="Nome"
-                            value={this.state.produto.nome} 
-                            onChange={this.handleChange} 
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <br />
-                        <TextField name="unidade" 
-                            label="Unidade"  
-                            value={this.state.produto.unidade} 
-                            onChange={this.handleChange}  
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        />  
-                        <TextField name="valor" 
-                            label="Valor"  
-                            type="number"
-                            value={this.state.produto.valor} 
-                            onChange={this.handleChange}  
-                            margin="dense" 
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                        /> 
-                        
-                        <br />
-                        <Button variant="contained" color="primary" type="submit">Salvar</Button>
-                        <Button variant="contained" color="secondary" onClick={this.voltar}>Voltar</Button>
+                        </Grid>
+                        <Grid item>
+                            <TextField name="nome" 
+                                label="Nome"
+                                value={this.state.produto.nome} 
+                                onChange={this.handleChange} 
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <TextField name="unidade" 
+                                label="Unidade"  
+                                value={this.state.produto.unidade} 
+                                onChange={this.handleChange}  
+                                margin="dense" 
+                                variant="outlined"
+                                InputLabelProps={{ shrink: true }}
+                            />  
+                        </Grid>
+                        <Grid item>
+                            <NumberFormat name="valor"
+                                value={this.state.produto.valor}  
+                                onChange={this.handleChange}  
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                allowNegative={false}
+                                customInput={TextField}
+                                label="Valor"
+                                margin="dense"
+                                variant="outlined"
+                            /> 
+                        </Grid>
+                        <Grid>
+                            <Button variant="contained" color="primary" type="submit">Salvar</Button>
+                            <Button variant="contained" color="secondary" onClick={this.voltar}>Voltar</Button>
+                        </Grid>
+                    </Grid>
+                    </Paper>
                     </form>
                 </div>
             </div>

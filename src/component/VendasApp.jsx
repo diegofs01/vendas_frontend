@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Button, AppBar, Toolbar, IconButton, Typography } from '@material-ui/core';
-import { Menu } from "@material-ui/icons";
+import { Button, Grid } from '@material-ui/core';
 
 class VendasApp extends Component {
 
@@ -26,32 +25,17 @@ class VendasApp extends Component {
     render() {
         return (
             <div>
-                <AppBar position="static">
-                    <Toolbar>
-                        <IconButton edge="start" color="inherit" aria-label="menu">
-                        <Menu />
-                        </IconButton>
-                        <Typography variant="h6">
-                        Vendas
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-
-                <br />
-
-                <Button variant="contained" color="secondary" onClick={this.clienteAction}>Clientes</Button>
-                
-                <br />
-                <br />
-                <br />
-
-                <Button variant="contained" color="secondary" onClick={this.produtoAction}>Produtos</Button>
-
-                <br />
-                <br />
-                <br />
-
-                <Button variant="contained" color="secondary" onClick={this.vendaAction}>Vendas</Button>
+                <Grid container direction="row" justify="center" alignItems="center" spacing={10}>
+                    <Grid item>
+                        <Button variant="contained" color="secondary" onClick={this.clienteAction}>Clientes</Button>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="secondary" onClick={this.produtoAction}>Produtos</Button>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="secondary" onClick={this.vendaAction}>Vendas</Button>
+                    </Grid>
+                </Grid>
             </div>
         );
     }

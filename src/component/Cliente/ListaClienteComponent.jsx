@@ -2,8 +2,7 @@ import React, { Component } from "react"
 import { Table, TableBody, TableCell, 
          TableContainer, TableHead, TableRow, 
          IconButton, Button, Paper, 
-         AppBar, Toolbar, Typography, 
-         Menu, MenuItem, Grid } from '@material-ui/core';
+         Typography, Menu, MenuItem, Grid } from '@material-ui/core';
 import { Add, Edit, ArrowBack, MoreVert, AddCircleOutline, RemoveCircleOutline } from '@material-ui/icons'
 import ClienteDataService from "../../service/ClienteDataService"
 import NumberFormat from "react-number-format"
@@ -94,18 +93,9 @@ class ListaClienteComponent extends Component {
     render() {
         return (
             <div>
-                <AppBar position="static">
-                    <Toolbar>
-                        <IconButton edge="start" color="inherit" aria-label="menu">
-                        
-                        </IconButton>
-                        <Typography variant="h6">
-                        Clientes
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-
-                <br />
+                <Typography variant="h6" align="center">
+                    Clientes
+                </Typography>
                 <Grid container direction="column" justify="space-evenly" alignItems="center" spacing={3}>
                     <Grid item>
                         <TableContainer component={Paper}>
