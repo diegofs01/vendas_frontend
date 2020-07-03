@@ -5,11 +5,13 @@ import ClienteDataService from "../../service/ClienteDataService"
 import { TextField, Button, Typography, 
          TableContainer, Table, TableBody, 
          TableCell, TableHead, TableRow, 
-         Paper, IconButton, Grid
+         Paper, IconButton, Grid, 
+         InputAdornment, Select, MenuItem
         } from "@material-ui/core"
 import { Add, Delete, Edit } from '@material-ui/icons'
 import DialogEditarQuantidade from './DialogEditarQuantidade'
 import DialogAdicionarItem from './DialogAdicionarItem'
+import DialogAlerta from './DialogAlerta'
 import NumberFormat from "react-number-format"
 import InputMask from "react-input-mask"
 
@@ -35,21 +37,25 @@ class FormVendaComponent extends Component {
             },
             dialogEditarQuantidade: false,
             dialogAdicionarItem: false,
+            dialogAlerta: false,
             itemSelecionado: [],
             produtos: [],
             clientes: [{
-                cpf: '', nome: 'Nulo'
+                cpf: '', nome: 'Nulo', saldo: 0
             }]
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.voltar = this.voltar.bind(this);
-        this.removerItem = this.removerItem.bind(this);
+        this.dialogAlertaHandleClose = this.dialogAlertaHandleClose.bind(this);
+        this.dialogAlertaHandleClickOpen = this.dialogAlertaHandleClickOpen.bind(this);
         this.dialogEditarQuantidadeHandleClickOpen = this.dialogEditarQuantidadeHandleClickOpen.bind(this);
         this.dialogEditarQuantidadeHandleClose = this.dialogEditarQuantidadeHandleClose.bind(this);
         this.dialogAdicionarItemHandleClickOpen = this.dialogAdicionarItemHandleClickOpen.bind(this);
         this.dialogAdicionarItemHandleClose = this.dialogAdicionarItemHandleClose.bind(this);
+        this.forceDialogOpenState = this.forceDialogOpenState.bind(this);
+        this.adicionarItem = this.adicionarItem.bind(this);
     }
 
     componentDidMount() {
@@ -69,7 +75,6 @@ class FormVendaComponent extends Component {
         });
         ClienteDataService.listarClientesAtivos()
         .then(response => {
-            console.log(response.data);
             this.setState({clientes: response.data});
         })
     }
@@ -96,34 +101,70 @@ class FormVendaComponent extends Component {
         }));
     }
 
-    removerItem(item) {
-        let tempItens = this.state.venda.itens;
-        let tempValorTotal = 0;
-        tempItens.splice(tempItens.indexOf(item), 1);        
-        this.state.venda.itens.forEach(item => {
-            tempValorTotal += (item.quantidade * item.produto.valor);
-        });
-        this.setState(prevState => ({
-            venda: {
-                ...prevState.venda,
-                itens: tempItens,
-                valorTotal: tempValorTotal
+    dialogAlertaHandleClose(item, resposta) {
+        if(resposta) {
+            let tempClientes = this.state.clientes;
+            let tempIndex = tempClientes.findIndex(c => c.cpf === this.state.venda.cpfCliente);
+
+            let tempItens = this.state.venda.itens;
+            let tempValorTotal = 0;
+
+            if(item.idItem !== undefined) {
+                console.log(item);
+                VendaDataService.excluirItem(item)
+                .then(response => {
+                    console.log(response);
+                });
             }
+
+            tempClientes[tempIndex].saldo += item.produto.valor * item.quantidade;
+            
+            tempItens.splice(tempItens.indexOf(item), 1);        
+            this.state.venda.itens.forEach(item => {
+                tempValorTotal += (item.quantidade * item.produto.valor);
+            });
+            this.setState(prevState => ({
+                venda: {
+                    ...prevState.venda,
+                    itens: tempItens,
+                    valorTotal: tempValorTotal
+                },
+                clientes: tempClientes
+            }));
+        }
+        this.setState(() => ({
+            dialogAlerta: false
         }));
     }
 
-    dialogEditarQuantidadeHandleClose(value) {
-        let tempValorTotal = 0;
-        this.state.venda.itens.forEach(item => {
-            tempValorTotal += (item.quantidade * item.produto.valor);
-        });
-        this.setState(prevState => ({
-            dialogEditarQuantidade: false,
-            venda: {
-                ...prevState.venda,
-                valorTotal: tempValorTotal
-            }
+    dialogAlertaHandleClickOpen(item) {
+        this.setState(() => ({
+            itemSelecionado: item,
+            dialogAlerta: true
         }));
+    };
+
+    dialogEditarQuantidadeHandleClose(difference) {
+        if(difference !== 0) {
+            let tempClientes = this.state.clientes;
+            let tempIndex = tempClientes.findIndex(c => c.cpf === this.state.venda.cpfCliente);
+            if(tempClientes[tempIndex].saldo >= (difference * this.state.itemSelecionado.produto.valor)) {
+                tempClientes[tempIndex].saldo -= (difference * this.state.itemSelecionado.produto.valor);
+
+                let tempValorTotal = 0;
+                this.state.venda.itens.forEach(item => {
+                    tempValorTotal += (item.quantidade * item.produto.valor);
+                });
+                this.setState(prevState => ({
+                    venda: {
+                        ...prevState.venda,
+                        valorTotal: tempValorTotal
+                    },
+                    clientes: tempClientes
+                }));
+            }
+        }
+        this.forceDialogOpenState("dialogEditarQuantidade", false);
     };
 
     dialogEditarQuantidadeHandleClickOpen(item) {
@@ -135,43 +176,71 @@ class FormVendaComponent extends Component {
 
     dialogAdicionarItemHandleClose(selecionado, quantidade) {
         if(selecionado !== '' && quantidade > 0) {
-            let index = -1;
-            let tempItens = this.state.venda.itens;
-            let tempItem;
-
-            tempItens.forEach(item => {
-                if(item.produto.codigo === selecionado.codigo) {
-                    index = tempItens.indexOf(item);
-                    tempItem = item;
-                }
-            });
-
-            if(index === -1) {
-                tempItem = {
-                    idVenda: this.state.venda.id,
-                    produto: selecionado,
-                    quantidade: quantidade
-                };
-                tempItens.push(tempItem);
-            } else {
-                tempItem.quantidade += quantidade;
+            if(this.state.venda.cpfCliente.replace(/[-._]/g, "").length < 11) {
+                this.forceDialogOpenState("dialogAdicionarItem", false);
+                return;
             }
 
-            let tempValorTotal = this.state.venda.valorTotal + (tempItem.produto.valor * quantidade);
+            let tempClientes = this.state.clientes;
+            let tempCliente = tempClientes.find(c => c.cpf === this.state.venda.cpfCliente);
 
-            this.setState(prevState => ({
-                venda: {
-                    ...prevState.venda,
-                    itens: tempItens,
-                    valorTotal: tempValorTotal
+            if(tempCliente !== undefined) {
+                if(tempCliente.saldo >= (selecionado.valor * quantidade)) {
+                    let tempIndex = tempClientes.indexOf(tempCliente);
+                    tempCliente.saldo -= selecionado.valor * quantidade;
+                    tempClientes[tempIndex] = tempCliente;
+
+                    this.setState(() => ({
+                        clientes: tempClientes
+                    }));
+
+                    this.adicionarItem(selecionado, quantidade);
                 }
-            }))
+            }
         }
 
-        this.setState(() => ({
-            dialogAdicionarItem: false
-        }));
+        this.forceDialogOpenState("dialogAdicionarItem", false);
     };
+
+    forceDialogOpenState(dialog, open) {
+        this.setState(() => ({
+            [dialog]: open
+        }));
+    }
+
+    adicionarItem(selecionado, quantidade) {
+        let index = -1;
+        let tempItens = this.state.venda.itens;
+        let tempItem;
+
+        tempItens.forEach(item => {
+            if(item.produto.codigo === selecionado.codigo) {
+                index = tempItens.indexOf(item);
+                tempItem = item;
+            }
+        });
+
+        if(index === -1) {
+            tempItem = {
+                idVenda: this.state.venda.id,
+                produto: selecionado,
+                quantidade: quantidade
+            };
+            tempItens.push(tempItem);
+        } else {
+            tempItem.quantidade += quantidade;
+        }
+
+        let tempValorTotal = this.state.venda.valorTotal + (tempItem.produto.valor * quantidade);
+
+        this.setState(prevState => ({
+            venda: {
+                ...prevState.venda,
+                itens: tempItens,
+                valorTotal: tempValorTotal
+            }
+        }))
+    }
 
     dialogAdicionarItemHandleClickOpen() {
         this.setState(() => ({
@@ -202,11 +271,29 @@ class FormVendaComponent extends Component {
                         </Grid>
                         <Grid item>
                             <InputMask name="cpfCliente"
+                                disabled={this.state.venda.itens.length > 0}
                                 mask={"999.999.999-99"} 
                                 value={this.state.venda.cpfCliente} 
                                 onChange={this.handleChange} 
                             >
-                                {(inputProps) => <TextField {...inputProps} label="Cliente" margin="dense" variant="outlined"/>}
+                                {(inputProps) => 
+                                    <TextField {...inputProps} label="Cliente" margin="dense" variant="outlined" InputProps={{
+                                        endAdornment: <InputAdornment>
+                                            { 
+                                                this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente.replace(/[-._]/g, "")) === undefined
+                                            ?
+                                                <Select name="cpfCliente" onChange={this.handleChange}>
+                                                    {this.state.clientes.map((cliente) => (
+                                                        <MenuItem key={cliente.cpf} value={cliente.cpf}>{cliente.cpf} {cliente.nome}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            :
+                                                <></>
+                                            }
+                                        </InputAdornment>
+                                    }}>
+                                    </TextField>
+                                }
                             </InputMask>
                         </Grid>
                         <Grid item>
@@ -229,6 +316,23 @@ class FormVendaComponent extends Component {
                                 allowNegative={false}
                                 customInput={TextField}
                                 label="Valor Total"
+                                margin="dense"
+                                variant="outlined"
+                            />
+
+                            <NumberFormat name="saldoRestante"
+                                value={
+                                    this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente) !== undefined
+                                ? 
+                                    this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente).saldo 
+                                : 
+                                    0.0
+                                }   
+                                decimalScale={2}
+                                fixedDecimalScale={true}
+                                customInput={TextField}
+                                disabled
+                                label="Saldo Restante"
                                 margin="dense"
                                 variant="outlined"
                             />
@@ -258,7 +362,7 @@ class FormVendaComponent extends Component {
                                                     <IconButton onClick={() => this.dialogEditarQuantidadeHandleClickOpen(item)}>
                                                         <Edit />                                            
                                                     </IconButton>
-                                                    <IconButton onClick={() => this.removerItem(item)}>
+                                                    <IconButton onClick={() => this.dialogAlertaHandleClickOpen(item)}>
                                                         <Delete />                                            
                                                     </IconButton>
                                                 </TableCell>
@@ -268,7 +372,7 @@ class FormVendaComponent extends Component {
                                 </Table>
                                 <Typography variant="overline" display="block" gutterBottom>
                                     Quantidade de Produtos: {this.state.venda.itens.length}
-                                    <IconButton size="small" onClick={() => this.dialogAdicionarItemHandleClickOpen()}>
+                                    <IconButton size="small" disabled={this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente.replace(/[-._]/g, "")) === undefined} onClick={() => this.dialogAdicionarItemHandleClickOpen()}>
                                         <Add />                                            
                                     </IconButton>
                                 </Typography>
@@ -284,6 +388,7 @@ class FormVendaComponent extends Component {
                 </div>
                 <DialogEditarQuantidade item={this.state.itemSelecionado} open={this.state.dialogEditarQuantidade} onClose={this.dialogEditarQuantidadeHandleClose} />
                 <DialogAdicionarItem open={this.state.dialogAdicionarItem} produtos={this.state.produtos} onClose={this.dialogAdicionarItemHandleClose}/>
+                <DialogAlerta item={this.state.itemSelecionado} open={this.state.dialogAlerta} onClose={this.dialogAlertaHandleClose} />
             </div>
         );
     }

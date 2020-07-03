@@ -31,6 +31,14 @@ class ClienteDataService {
     listarClientesAtivos() {
         return axios.get(`${CLIENTE_API_URL}/ativos`);
     }
+
+    consultarSaldo(cpf) {
+        return axios.get(`${CLIENTE_API_URL}/saldo/${cpf}`);
+    }
+
+    atualizarSaldo(cpf, novoSaldo) {
+        return axios.put(`${CLIENTE_API_URL}/saldo/${cpf}`, novoSaldo);
+    }
 }
 
 export default new ClienteDataService()

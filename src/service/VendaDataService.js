@@ -16,6 +16,10 @@ class VendaDataService {
         venda.dataVenda = new Date(venda.dataVenda).toISOString();
         return axios.post(`${VENDA_API_URL}/novo`, venda);
     }
+
+    excluirItem(idItem) {
+        return axios.delete(`${VENDA_API_URL}/excluirItem/${idItem}`);
+    }
 }
 
 export default new VendaDataService()
