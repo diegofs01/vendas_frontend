@@ -36,8 +36,8 @@ class ClienteDataService {
         return axios.get(`${CLIENTE_API_URL}/saldo/${cpf}`);
     }
 
-    atualizarSaldo(cpf, novoSaldo) {
-        return axios.put(`${CLIENTE_API_URL}/saldo/${cpf}`, novoSaldo);
+    atualizarCliente(cliente) {
+        return axios.put(`${CLIENTE_API_URL}/editar`, cliente);
     }
 }
 

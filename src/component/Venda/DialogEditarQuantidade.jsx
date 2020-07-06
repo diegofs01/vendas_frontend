@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, IconButton} from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, IconButton, Button} from '@material-ui/core';
 import { Add, Remove, Restore } from '@material-ui/icons'
 
 export default function DialogEditarQuantidade(props) {
@@ -17,7 +17,11 @@ export default function DialogEditarQuantidade(props) {
     }
 
     const handleClose = () => {
-        onClose(quantidade - props.item.quantidade);
+        onClose(true, quantidade - props.item.quantidade, props.item);
+    };
+
+    const handleCloseNaoAlterar = () => {
+        onClose(false, quantidade - props.item.quantidade, props.item);
     };
 
     return (
@@ -44,6 +48,9 @@ export default function DialogEditarQuantidade(props) {
                 <IconButton onClick={() => setQuantidade(prevQuantidade => prevQuantidade - 1)}>
                     <Remove/>
                 </IconButton>
+                <Button variant="contained" color="secondary" onClick={handleCloseNaoAlterar}>
+                    Cancelar
+                </Button>
             </DialogActions>
         </Dialog>
     );

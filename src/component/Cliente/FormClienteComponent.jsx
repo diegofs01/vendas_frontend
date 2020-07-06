@@ -174,7 +174,7 @@ class FormClienteComponent extends Component {
 
         return (
             <div>
-                <Typography variant="h6">
+                <Typography variant="h6" align="right">
                     {this.novoCliente ? 'Novo Cliente' : 'Editar Cliente'}
                 </Typography>
                 <div>

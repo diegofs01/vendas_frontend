@@ -30,7 +30,7 @@ class FormVendaComponent extends Component {
         this.state = {
             venda: {
                 id: 0,
-                dataVenda: new Date(),
+                dataVenda: '',
                 cpfCliente: '',
                 itens: [],
                 valorTotal: 0
@@ -42,7 +42,8 @@ class FormVendaComponent extends Component {
             produtos: [],
             clientes: [{
                 cpf: '', nome: 'Nulo', saldo: 0
-            }]
+            }],
+            itensExcluidos: []
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -63,11 +64,22 @@ class FormVendaComponent extends Component {
             VendaDataService.buscarVenda(this.props.match.params.id)
             .then(response => {
                 let tempDate = new Date(response.data.dataVenda);
-                tempDate.setHours(tempDate.getHours() - 3);
+                tempDate.setHours(tempDate.getHours() - (tempDate.getTimezoneOffset() / 60));
                 response.data.dataVenda = tempDate.toISOString().replace("Z", "");
                 
                 this.setState({venda: response.data});
             });
+        } else {
+            let tempDate = new Date();
+            tempDate.setHours(tempDate.getHours() - (tempDate.getTimezoneOffset() / 60));
+            tempDate = tempDate.toISOString().replace("Z", "");
+
+            this.setState(prevState => ({
+                venda: {
+                    ...prevState.venda,
+                    dataVenda: tempDate
+                }
+            }));
         }
         ProdutoDataService.listarProdutos()
         .then(response => {
@@ -82,7 +94,13 @@ class FormVendaComponent extends Component {
     handleSubmit(event) {
         event.preventDefault();
         VendaDataService.novoVenda(this.state.venda)
-        .then(() => this.voltar());
+        .then(
+            this.state.itensExcluidos.forEach(item => {
+                VendaDataService.excluirItem(item.idItem);
+            }),
+            ClienteDataService.atualizarCliente(this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente))
+            .then(this.voltar())
+        );
     }
 
     voltar() {
@@ -107,19 +125,22 @@ class FormVendaComponent extends Component {
             let tempIndex = tempClientes.findIndex(c => c.cpf === this.state.venda.cpfCliente);
 
             let tempItens = this.state.venda.itens;
-            let tempValorTotal = 0;
+            let tempValorTotal = 0;            
 
             if(item.idItem !== undefined) {
-                console.log(item);
-                VendaDataService.excluirItem(item)
-                .then(response => {
-                    console.log(response);
-                });
+                //VendaDataService.excluirItem(item.idItem);
+                let tempItensExcluidos = this.state.itensExcluidos;
+                tempItensExcluidos.push(item);
+                this.setState(() => ({
+                    itensExcluidos: tempItensExcluidos
+                }));
             }
 
             tempClientes[tempIndex].saldo += item.produto.valor * item.quantidade;
+
+            //ClienteDataService.atualizarCliente(tempClientes[tempIndex]);
             
-            tempItens.splice(tempItens.indexOf(item), 1);        
+            tempItens.splice(tempItens.indexOf(item), 1);
             this.state.venda.itens.forEach(item => {
                 tempValorTotal += (item.quantidade * item.produto.valor);
             });
@@ -144,20 +165,28 @@ class FormVendaComponent extends Component {
         }));
     };
 
-    dialogEditarQuantidadeHandleClose(difference) {
-        if(difference !== 0) {
+    dialogEditarQuantidadeHandleClose(alterar, difference, item) {
+        if(alterar && difference !== 0) {
             let tempClientes = this.state.clientes;
-            let tempIndex = tempClientes.findIndex(c => c.cpf === this.state.venda.cpfCliente);
-            if(tempClientes[tempIndex].saldo >= (difference * this.state.itemSelecionado.produto.valor)) {
-                tempClientes[tempIndex].saldo -= (difference * this.state.itemSelecionado.produto.valor);
+            let clienteIndex = tempClientes.findIndex(c => c.cpf === this.state.venda.cpfCliente);
+            if(tempClientes[clienteIndex].saldo >= (difference * this.state.itemSelecionado.produto.valor)) {
+                tempClientes[clienteIndex].saldo -= (difference * this.state.itemSelecionado.produto.valor);
+
+                let tempItens = this.state.venda.itens;
+                let itemIndex = tempItens.findIndex(i => i.idItem === item.idItem);
+                if(itemIndex > -1) {
+                    item.quantidade += difference;
+                    tempItens[itemIndex] = item;
+                }
 
                 let tempValorTotal = 0;
-                this.state.venda.itens.forEach(item => {
-                    tempValorTotal += (item.quantidade * item.produto.valor);
+                tempItens.forEach(i => {
+                    tempValorTotal += (i.quantidade * i.produto.valor);
                 });
                 this.setState(prevState => ({
                     venda: {
                         ...prevState.venda,
+                        itens: tempItens,
                         valorTotal: tempValorTotal
                     },
                     clientes: tempClientes
@@ -189,6 +218,8 @@ class FormVendaComponent extends Component {
                     let tempIndex = tempClientes.indexOf(tempCliente);
                     tempCliente.saldo -= selecionado.valor * quantidade;
                     tempClientes[tempIndex] = tempCliente;
+
+                    //ClienteDataService.atualizarCliente(tempCliente);
 
                     this.setState(() => ({
                         clientes: tempClientes
@@ -252,7 +283,7 @@ class FormVendaComponent extends Component {
 
         return (
             <div>
-                <Typography variant="h3">
+                <Typography variant="h6" align="center">
                     {this.novoVenda ? 'Nova Venda' : 'Editar Venda'}
                 </Typography>
                 <div>
@@ -308,14 +339,14 @@ class FormVendaComponent extends Component {
                             /> 
                         </Grid>
                         <Grid item>  
-                            <NumberFormat name="valorTotal"
+                            <NumberFormat disabled name="valorTotal"
                                 value={this.state.venda.valorTotal}  
                                 onChange={this.handleChange}  
                                 decimalScale={2}
                                 fixedDecimalScale={true}
                                 allowNegative={false}
                                 customInput={TextField}
-                                label="Valor Total"
+                                label="Valor Total da Venda"
                                 margin="dense"
                                 variant="outlined"
                             />
@@ -346,6 +377,7 @@ class FormVendaComponent extends Component {
                                             <TableCell>Nome</TableCell>
                                             <TableCell>Preço</TableCell>
                                             <TableCell>Quantidade</TableCell>
+                                            <TableCell>Valor do Item</TableCell>
                                             <TableCell>Unidade</TableCell>
                                             <TableCell>Opções</TableCell>
                                         </TableRow>
@@ -355,11 +387,26 @@ class FormVendaComponent extends Component {
                                             <TableRow key={item.idItem}>
                                                 <TableCell component="th" scope="tow">{item.idItem}</TableCell>
                                                 <TableCell>{item.produto.nome}</TableCell>
-                                                <TableCell>{item.produto.valor}</TableCell>
-                                                <TableCell>{item.quantidade}</TableCell>
-                                                <TableCell>{item.produto.unidade}</TableCell>
+                                                <TableCell align="right">
+                                                    <NumberFormat name="valor"
+                                                        displayType="text"
+                                                        value={item.produto.valor}   
+                                                        decimalScale={2}
+                                                        fixedDecimalScale={true}
+                                                    />
+                                                </TableCell>
+                                                <TableCell align="center">{item.quantidade}</TableCell>
+                                                <TableCell align="right">
+                                                    <NumberFormat name="valor"
+                                                        displayType="text"
+                                                        value={item.produto.valor * item.quantidade}   
+                                                        decimalScale={2}
+                                                        fixedDecimalScale={true}
+                                                    />
+                                                </TableCell>
+                                                <TableCell align="center">{item.produto.unidade}</TableCell>
                                                 <TableCell>
-                                                    <IconButton onClick={() => this.dialogEditarQuantidadeHandleClickOpen(item)}>
+                                                    <IconButton disabled={item.idItem === undefined} onClick={() => this.dialogEditarQuantidadeHandleClickOpen(item)}>
                                                         <Edit />                                            
                                                     </IconButton>
                                                     <IconButton onClick={() => this.dialogAlertaHandleClickOpen(item)}>
@@ -372,7 +419,7 @@ class FormVendaComponent extends Component {
                                 </Table>
                                 <Typography variant="overline" display="block" gutterBottom>
                                     Quantidade de Produtos: {this.state.venda.itens.length}
-                                    <IconButton size="small" disabled={this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente.replace(/[-._]/g, "")) === undefined} onClick={() => this.dialogAdicionarItemHandleClickOpen()}>
+                                    <IconButton color="primary" size="small" disabled={this.state.clientes.find(c => c.cpf === this.state.venda.cpfCliente.replace(/[-._]/g, "")) === undefined} onClick={() => this.dialogAdicionarItemHandleClickOpen()}>
                                         <Add />                                            
                                     </IconButton>
                                 </Typography>
