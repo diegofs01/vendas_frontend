@@ -69,7 +69,7 @@ class ListaVendaComponent extends Component {
                                     {this.state.vendas.map((venda) => (
                                         <TableRow key={venda.id}>
                                             <TableCell component="th" scope="tow">{venda.id}</TableCell>
-                                            <TableCell>{venda.cpfCliente}</TableCell>
+                                            <TableCell>{venda.cliente.cpf}</TableCell>
                                             <TableCell>{new Date(venda.dataVenda).toLocaleString('pt-BR')}</TableCell>
                                             <TableCell align="center">{venda.itens.length}</TableCell>
                                             <TableCell align="right">

@@ -51,6 +51,9 @@ export default function DialogEditarQuantidade(props) {
                 <Button variant="contained" color="secondary" onClick={handleCloseNaoAlterar}>
                     Cancelar
                 </Button>
+                <Button variant="contained" color="primary" onClick={handleClose}>
+                    Salvar
+                </Button>
             </DialogActions>
         </Dialog>
     );

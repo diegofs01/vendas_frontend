@@ -213,6 +213,8 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
+                                error={this.state.cliente.nome.length < 2}
+                                helperText="Nome Inválido! (helperText)"
                             />   
 
                             <TextField name="dataNascimento" 

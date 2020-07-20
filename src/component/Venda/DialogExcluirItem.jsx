@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button,} from '@material-ui/core';
 
-export default function DialogAlerta(props) {
+export default function DialogExcluirItem(props) {
 
     let onClose = props.onClose;
     let open = props.open;
