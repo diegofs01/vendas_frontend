@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from "axios";
 import { Button, Grid } from '@material-ui/core';
 import { People, LocalShipping, AttachMoney } from '@material-ui/icons'
 
@@ -23,6 +24,14 @@ class VendasApp extends Component {
         this.props.history.push(`/venda/`);
     }
 
+    verificarToken() {
+        let jwtToken = localStorage.getItem("authorization");
+        console.log('token: ' + jwtToken);
+        axios.post('http://localhost:8080/jwt/checkToken/', jwtToken).then(res => {
+            console.log(res);
+        });
+    }
+
     render() {
         return (
             <div>
@@ -37,6 +46,8 @@ class VendasApp extends Component {
                         <Button variant="contained" color="secondary" startIcon={<AttachMoney />} onClick={this.vendaAction}>Vendas</Button>
                     </Grid>
                 </Grid>
+
+                <Button variant="contained" color="primary" onClick={this.verificarToken}>Verificar Token</Button>
             </div>
         );
     }

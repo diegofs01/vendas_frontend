@@ -1,6 +1,8 @@
 import React from 'react';
 import './App.css';
+import interceptors from './interceptors';
 import VendasApp from './component/VendasApp';
+import Login from './component/Login';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import ListaClienteComponent from './component/Cliente/ListaClienteComponent';
 import FormClienteComponent from './component/Cliente/FormClienteComponent';
@@ -26,7 +28,8 @@ function App() {
       </AppBar>
       <Router>
           <Switch>
-              <Route path="/" exact component={VendasApp}/>
+              <Route path="/" exact component={Login}/>
+              <Route path="/index" exact component={VendasApp}/>
               <Route path="/cliente/" exact component={ListaClienteComponent} />
               <Route path="/cliente/novo" exact component={FormClienteComponent} />
               <Route path="/cliente/editar/:id" component={FormClienteComponent} />
