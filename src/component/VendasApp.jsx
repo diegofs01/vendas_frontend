@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import axios from "axios";
 import { Button, Grid } from '@material-ui/core';
 import { People, LocalShipping, AttachMoney } from '@material-ui/icons'
 
@@ -13,23 +12,15 @@ class VendasApp extends Component {
     }
 
     clienteAction() {
-        this.props.history.push(`/cliente/`);
+        this.props.history.push('/cliente/');
     }
 
     produtoAction() {
-        this.props.history.push(`/produto/`);
+        this.props.history.push('/produto/');
     }
 
     vendaAction() {
-        this.props.history.push(`/venda/`);
-    }
-
-    verificarToken() {
-        let jwtToken = localStorage.getItem("authorization");
-        console.log('token: ' + jwtToken);
-        axios.post('http://localhost:8080/jwt/checkToken/', jwtToken).then(res => {
-            console.log(res);
-        });
+        this.props.history.push('/venda/');
     }
 
     render() {
@@ -46,8 +37,6 @@ class VendasApp extends Component {
                         <Button variant="contained" color="secondary" startIcon={<AttachMoney />} onClick={this.vendaAction}>Vendas</Button>
                     </Grid>
                 </Grid>
-
-                <Button variant="contained" color="primary" onClick={this.verificarToken}>Verificar Token</Button>
             </div>
         );
     }

@@ -1,15 +1,19 @@
 var axios = require("axios");
 
-export const jwtToken = localStorage.getItem("authorization");
-
-axios.interceptors.request.use(
-  function(config) {
-    if (jwtToken) {
-      config.headers["authorization"] = "Bearer " + jwtToken;
+axios.interceptors.request.use(async(config) => {
+    console.log('-----<interceptor>-----');
+    console.log(config);
+    console.log('-----</interceptor>-----');
+    if (
+        !config.url.endsWith('login')
+    ) {
+        console.log('dentro do if');
+        const jwtToken = localStorage.getItem("authorization");
+        if(jwtToken !== null && jwtToken !== undefined) {
+            config.headers.Authorization = `Bearer ${jwtToken}`;
+        }
     }
     return config;
-  },
-  function(err) {
-    return Promise.reject(err);
-  }
-);
+}, (error) => {
+    return Promise.reject(error);
+});

@@ -17,17 +17,15 @@ class Login extends Component {
   componentDidMount() {
     console.log('componentDidMount');
     let jwtToken = localStorage.getItem("authorization");
-    console.log(jwtToken);
+    if(jwtToken !== null && jwtToken !== undefined) {
+      this.handleIndex();
+    }
   }
 
   handleFormSubmit = event => {
     event.preventDefault();
 
     const endpoint = "http://localhost:8080/jwt/login";
-
-    //const username = this.state.username;
-    //const password = this.state.password;
-
     const user_object = {
       username: this.state.username,
       password: this.state.password
@@ -35,17 +33,24 @@ class Login extends Component {
 
     axios.post(endpoint, user_object).then(res => {
       localStorage.setItem("authorization", res.data.token);
-      return this.handleDashboard();
+      this.handleIndex();
     });
   };
 
-  handleDashboard() {
-    axios.get("http://localhost:8080/api/produto/").then(res => {
-      if (res.status === 200) {
+  handleIndex() {
+    let jwtToken = localStorage.getItem("authorization");
+    axios.post('http://localhost:8080/jwt/checkToken/', jwtToken).then(res => {
+      console.log('handleIndex');
+      if(res.status === 200) {
+        localStorage.setItem("user", this.state.username);
         this.props.history.push("/index");
       } else {
-        alert("Authentication failure");
+        localStorage.setItem("user", null);
+        alert('Authentication failure');
       }
+    })
+    .catch(res => {
+      localStorage.setItem("user", null);
     });
   }
 
@@ -62,7 +67,7 @@ class Login extends Component {
       <div>
         <div>
           <form onSubmit={this.handleFormSubmit}>
-            <Typography variant="h6" align="right">
+            <Typography variant="h6" align="center">
               Please Login
             </Typography>
             <Paper elevation={1}>

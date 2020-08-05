@@ -65,7 +65,7 @@ class ListaClienteComponent extends Component {
     }
 
     home() {
-        this.props.history.push(`/`);
+        this.props.history.push('/index');
     }
 
     handleMenuOpen(event, cliente) {

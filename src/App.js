@@ -10,7 +10,7 @@ import ListaProdutoComponent from './component/Produto/ListaProdutoComponent';
 import FormProdutoComponent from './component/Produto/FormProdutoComponent';
 import ListaVendaComponent from './component/Venda/ListaVendaComponent';
 import FormVendaComponent from './component/Venda/FormVendaComponent';
-import { AppBar, Toolbar, IconButton, Typography } from '@material-ui/core';
+import { AppBar, Toolbar, IconButton, Typography, Grid } from '@material-ui/core';
 import { Menu } from '@material-ui/icons';
 
 function App() {
@@ -18,12 +18,24 @@ function App() {
     <>
       <AppBar position="static">
         <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="menu">
-              <Menu />
-            </IconButton>
-            <Typography variant="h6">
-              Vendas
-            </Typography>
+            <Grid container direction="row" justify="center" alignItems="center" spacing={10}>
+              <Grid item>
+                <IconButton edge="start" color="inherit" aria-label="menu">
+                  <Menu /> 
+                  <Typography variant="inherit">Menu</Typography>
+                </IconButton>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6">
+                  Vendas
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6">
+                  {localStorage.getItem("user")}
+                </Typography>
+              </Grid>
+            </Grid>
         </Toolbar>
       </AppBar>
       <Router>
