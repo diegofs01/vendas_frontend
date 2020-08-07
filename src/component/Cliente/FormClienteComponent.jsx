@@ -3,14 +3,16 @@ import ClienteDataService from "../../service/ClienteDataService"
 import { TextField, Switch, Button, 
          Grid, Typography, Paper, 
          Radio, RadioGroup, FormControlLabel, 
-         Select, MenuItem, InputLabel, FormLabel } from "@material-ui/core"
+         Select, MenuItem, InputLabel, 
+         FormLabel, 
+         List, ListItem, ListItemText } from "@material-ui/core"
 import InputMask from "react-input-mask"
 import NumberFormat from "react-number-format"
 
 class FormClienteComponent extends Component {
 
     novoCliente = true;
-    ufList = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
+    ufList = ['', 'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
 
     constructor(props) {
         super(props);
@@ -121,11 +123,77 @@ class FormClienteComponent extends Component {
             valido = false;
         }
 
-        if (values.nome === '' || values.nome.length === 0) {
+        //nome nao pode ser nulo ou "vazio"
+        if (values.nome === '' || values.nome.length <= 0) {
             listaErros.push('Nome Obrigatório');
             valido = false;
         }
 
+        //dataNascimento nao pode ser nulo
+        if (values.dataNascimento === undefined || values.dataNascimento === null) {
+            listaErros.push('Data de Nascimento inválido');
+            valido = false;
+        }
+
+        //Masculino ou Feminino (Avaliando a possibilidade de incluir Helicóptero Apache)
+        if (values.sexo !== 'Masculino' && values.sexo !== 'Feminino') {
+			listaErros.push('Sexo inválido');
+        	valido = false;
+        }
+
+        //cep tem que ter 8 caracteres e nao pode ser nulo
+        values.cep.replace(/[-]/g, "");
+        if (values.cep === '' || values.cep.length !== 8) {
+            listaErros.push('CEP inválido');
+            valido = false;
+        }
+
+        //logradouro nao pode ser nulo ou sem caracteres
+        if (values.logradouro === '' || values.logradouro.length <= 0) {
+            listaErros.push('Logradouro inválido');
+            valido = false;
+        }
+
+        //numero da casa, 0 = sem numero
+        if (values.numero < 0) {
+            listaErros.push('Numero não pode ser negativo');
+            valido = false;
+        }
+
+        //complemento pode ser vazio mas nao invalido
+        if (values.complemento.length < 0) {
+            listaErros.push('Complemento inválido');
+            valido = false;
+        }
+
+        //bairro nao pode ser nulo ou sem caracteres
+        if (values.bairro === '' || values.bairro.length <= 0) {
+            listaErros.push('Bairro inválido');
+            valido = false;
+        }
+
+        //cidade nao pode ser nulo ou sem caracteres
+        if (values.cidade === '' || values.cidade.length <= 0) {
+            listaErros.push('Cidade inválido');
+            valido = false;
+        }
+
+        //UF nao pode ser nulo, tem que ter 2 caracteres
+        if( values.uf === null || 
+            values.uf === undefined || 
+            values.uf === '' ||
+            values.uf.length !== 2
+        ) {
+            listaErros.push('UF nulo ou inválido');
+            valido = false;
+        }
+        //e tem que ser existente
+        if(!this.ufList.includes(values.uf)) {
+            listaErros.push('UF não existente');
+            valido = false;
+        }
+
+        //saldo nao pode ser negativo ou zero
         if(values.saldo <= 0) {
             listaErros.push('Saldo nao pode ser zero ou negativo');
             valido = false;
@@ -149,16 +217,20 @@ class FormClienteComponent extends Component {
         if(this.validate(this.state.cliente)) {
             ClienteDataService.novoCliente(this.state.cliente)
             .then(async res => {
-                console.log(res);
                 let status = await res.data;
                 if(status === 'CREATED' || status === 'OK') {
                     this.voltar();
-                } 
-                if(status === 'CONFLICT') {
-                    alert('CPF ja existente no sistema');
-                }
-                if(status === 'BAD_REQUEST') {
-                    alert('Cliente inválido');
+                } else {
+                    let erro = [];
+                    if(status === 'CONFLICT') {
+                        erro.push('<Backend> Cliente ja existente no sistema');
+                    }
+                    if(status === 'BAD_REQUEST') {
+                        erro.push('<Backend> Cliente inválido');
+                    }
+                    this.setState({
+                        erros: erro
+                    });
                 }
             });
         }
@@ -187,18 +259,31 @@ class FormClienteComponent extends Component {
     }
 
     render() {
-
         return (
             <div>
-                <Typography variant="h6" align="right">
+                <Typography variant="h6" align="center">
                     {this.novoCliente ? 'Novo Cliente' : 'Editar Cliente'}
                 </Typography>
                 <div>
-                    <ul>
-                        {this.state.erros.map(erro => (
-                            <li key={erro}>{erro}</li>
-                        ))}
-                    </ul>
+                    {
+                        this.state.erros.length > 0 
+                    ? 
+                        <div align="center">
+                        <Typography variant="overline">
+                            Erros
+                            <List dense={true} id="listaErro">
+                                {this.state.erros.map((erro) => (
+                                    <ListItem key={erro} align="center">
+                                        <ListItemText primary={erro}/>
+                                    </ListItem>
+                                ))}
+                            </List>
+                            /Erros
+                        </Typography>
+                        </div>
+                    :
+                        <></>
+                    }
                     
                     <form onSubmit={this.handleSubmit}>
                     <Paper elevation={1}>
@@ -269,7 +354,7 @@ class FormClienteComponent extends Component {
                         <Grid container direction="row" justify="center" alignItems="center">
                             <TextField name="numero" 
                                 label="Numero" 
-                                type="number" 
+                                type="number"
                                 value={this.state.cliente.numero}  
                                 onChange={this.handleChange}  
                                 margin="dense" 

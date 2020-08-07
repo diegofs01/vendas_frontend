@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+// eslint-disable-next-line
 import interceptors from './interceptors';
 import VendasApp from './component/VendasApp';
 import Login from './component/Login';
