@@ -48,8 +48,14 @@ class ListaClienteComponent extends Component {
 
     ativarCliente(cpf) {
         ClienteDataService.ativarCliente(cpf.replace(/[-.]/g, ""))
-        .then(() => {
-            this.atualizarListaClientes();
+        .then(async res => {
+            let status = await res.data;
+            if(status === 'OK') {
+                this.atualizarListaClientes();  
+            } 
+            if(status === 'BAD_REQUEST') {
+                alert('Não foi possivel ativar o cliente');
+            }
             this.handleMenuClose("MenuClose");
             this.handleMenuClose("MenuExited");
         });
@@ -57,8 +63,14 @@ class ListaClienteComponent extends Component {
 
     desativarCliente(cpf) {
         ClienteDataService.desativarCliente(cpf.replace(/[-.]/g, ""))
-        .then(() => {
-            this.atualizarListaClientes();
+        .then(async res => {
+            let status = await res.data;
+            if(status === 'OK') {
+                this.atualizarListaClientes();
+            } 
+            if(status === 'BAD_REQUEST') {
+                alert('Não foi possivel desativar o cliente');
+            }
             this.handleMenuClose("MenuClose");
             this.handleMenuClose("MenuExited");
         });

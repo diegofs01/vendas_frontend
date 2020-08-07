@@ -51,12 +51,16 @@ class FormClienteComponent extends Component {
         if(!this.novoCliente) {
             ClienteDataService.buscarCliente(this.props.match.params.id)
             .then(response => {
-                if(response.data.dataNascimento === null)
-                    response.data.dataNascimento = new Date().toISOString().substring(0,10);
-                if(response.data.uf === null)
-                    response.data.uf = '';
+                if(response.data === null) {
+                    this.voltar();
+                } else {
+                    if(response.data.dataNascimento === null)
+                        response.data.dataNascimento = new Date().toISOString().substring(0,10);
+                    if(response.data.uf === null)
+                        response.data.uf = '';
 
-                this.setState({cliente: response.data});
+                    this.setState({cliente: response.data});
+                }
             });
         }
     }
@@ -135,7 +139,7 @@ class FormClienteComponent extends Component {
     }
 
     voltar() {
-        this.props.history.push(`/cliente/`);
+        this.props.history.push('/cliente/');
     }
 
     handleSubmit(event) {
@@ -144,7 +148,19 @@ class FormClienteComponent extends Component {
 
         if(this.validate(this.state.cliente)) {
             ClienteDataService.novoCliente(this.state.cliente)
-            .then(() => this.voltar());
+            .then(async res => {
+                console.log(res);
+                let status = await res.data;
+                if(status === 'CREATED' || status === 'OK') {
+                    this.voltar();
+                } 
+                if(status === 'CONFLICT') {
+                    alert('CPF ja existente no sistema');
+                }
+                if(status === 'BAD_REQUEST') {
+                    alert('Cliente inválido');
+                }
+            });
         }
     }
 
@@ -213,8 +229,6 @@ class FormClienteComponent extends Component {
                                 onChange={this.handleChange} 
                                 margin="dense" 
                                 variant="outlined"
-                                error={this.state.cliente.nome.length < 2}
-                                helperText="Nome Inválido! (helperText)"
                             />   
 
                             <TextField name="dataNascimento" 
