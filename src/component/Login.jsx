@@ -14,14 +14,6 @@ class Login extends Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  componentDidMount() {
-    console.log('componentDidMount');
-    let jwtToken = localStorage.getItem("authorization");
-    if(jwtToken !== null && jwtToken !== undefined) {
-      this.handleIndex();
-    }
-  }
-
   handleFormSubmit = event => {
     event.preventDefault();
 
@@ -32,25 +24,29 @@ class Login extends Component {
     };
 
     axios.post(endpoint, user_object).then(res => {
-      localStorage.setItem("authorization", res.data.token);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("expDate", res.data.expirationDate);
       this.handleIndex();
     });
   };
 
   handleIndex() {
-    let jwtToken = localStorage.getItem("authorization");
+    let jwtToken = localStorage.getItem("token");
     axios.post('http://localhost:8080/jwt/checkToken/', jwtToken).then(res => {
-      console.log('handleIndex');
-      if(res.status === 200) {
+      if(res.status === 200 && res.data === "OK") {
         localStorage.setItem("user", this.state.username);
         this.props.history.push("/index");
       } else {
-        localStorage.setItem("user", null);
-        alert('Authentication failure');
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("expDate");
+        alert('Falha no login, tente novamente!');
       }
     })
     .catch(res => {
-      localStorage.setItem("user", null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      localStorage.removeItem("expDate");
     });
   }
 
