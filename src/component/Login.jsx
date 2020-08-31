@@ -33,6 +33,7 @@ class Login extends Component {
   handleIndex() {
     let jwtToken = localStorage.getItem("token");
     axios.post('http://localhost:8080/jwt/checkToken/', jwtToken).then(res => {
+      console.log(res);
       if(res.status === 200 && res.data === "OK") {
         localStorage.setItem("user", this.state.username);
         this.props.history.push("/index");

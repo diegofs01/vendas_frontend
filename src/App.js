@@ -28,6 +28,10 @@ const AuthenticatedRoute = ({component: Component, ...rest}) => {
     checkToken = false;
     alert('ERRO: Token inválido');
   }
+  if(isNaN(Date.parse(localStorage.getItem("expDate")))) {
+    checkToken = false;
+    alert('ERRO: Data de expiração inválido');
+  }
   if(Date.parse(localStorage.getItem("expDate")) < Date.now()) {
     checkToken = false;
     alert('ERRO: Token expirado');
