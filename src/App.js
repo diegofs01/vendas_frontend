@@ -40,11 +40,9 @@ const AuthenticatedRoute = ({component: Component, ...rest}) => {
         <Component {...props} />
       :
         <>
-          {
-            localStorage.removeItem("user"),
-            localStorage.removeItem("token"),
-            localStorage.removeItem("expDate")
-          }
+          {localStorage.removeItem("user")}
+          {localStorage.removeItem("token")}
+          {localStorage.removeItem("expDate")}
           <Redirect to='/login'/>
         </>
     )} />

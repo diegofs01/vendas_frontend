@@ -67,30 +67,30 @@ class FormClienteComponent extends Component {
         }
     }
 
-    validate(values) {
+    validate(cliente) {
         let valido = true;
         let listaErros = [];
         let soma, digito;
 
-        values.cpf = values.cpf.replace(/[-.]/g, "");
+        cliente.cpf = cliente.cpf.replace(/[-.]/g, "");
 
         //comprimento
-        if(values.cpf.length !== 11) {            
+        if(cliente.cpf.length !== 11) {            
             listaErros.push('CPF requer 11 números');
             valido = false;
         }
 
         //todos numeros iguais
-        if(values.cpf.values === "00000000000" || 
-            values.cpf.values === "11111111111" || 
-            values.cpf.values === "22222222222" || 
-            values.cpf.values === "33333333333" || 
-            values.cpf.values === "44444444444" || 
-            values.cpf.values === "55555555555" || 
-            values.cpf.values === "66666666666" || 
-            values.cpf.values === "77777777777" || 
-            values.cpf.values === "88888888888" || 
-            values.cpf.values === "99999999999") {
+        if( cliente.cpf.values === "00000000000" || 
+            cliente.cpf.values === "11111111111" || 
+            cliente.cpf.values === "22222222222" || 
+            cliente.cpf.values === "33333333333" || 
+            cliente.cpf.values === "44444444444" || 
+            cliente.cpf.values === "55555555555" || 
+            cliente.cpf.values === "66666666666" || 
+            cliente.cpf.values === "77777777777" || 
+            cliente.cpf.values === "88888888888" || 
+            cliente.cpf.values === "99999999999") {
                 listaErros.push('CPF inválido (Todos os números iguais)');
                 valido = false;
         }
@@ -98,13 +98,13 @@ class FormClienteComponent extends Component {
         //1º digito
         soma = 0;
         for (let i = 0; i < 9; i++) {
-            soma += parseInt(values.cpf.charAt(i)) * (10 - i);
+            soma += parseInt(cliente.cpf.charAt(i)) * (10 - i);
         }
         digito = 11 - (soma % 11);
         if(digito === 10 || digito === 11) {
             digito = 0;
         }
-        if(digito !== parseInt(values.cpf.charAt(9))) {
+        if(digito !== parseInt(cliente.cpf.charAt(9))) {
             listaErros.push('CPF inválido (1º Digito Verificador)');
             valido = false;
         }
@@ -112,89 +112,89 @@ class FormClienteComponent extends Component {
         //2º digito
         soma = 0;
         for (let i = 0; i < 10; i++) {
-            soma += parseInt(values.cpf.charAt(i)) * (11 - i);
+            soma += parseInt(cliente.cpf.charAt(i)) * (11 - i);
         }
         digito = 11 - (soma % 11);
         if(digito === 10 || digito === 11) {
             digito = 0;
         }
-        if(digito !== parseInt(values.cpf.charAt((10)))) {
+        if(digito !== parseInt(cliente.cpf.charAt((10)))) {
             listaErros.push('CPF inválido (2º Digito Verificador)');
             valido = false;
         }
 
         //nome nao pode ser nulo ou "vazio"
-        if (values.nome === '' || values.nome.length <= 0) {
+        if (cliente.nome === '' || cliente.nome.length <= 0) {
             listaErros.push('Nome Obrigatório');
             valido = false;
         }
 
         //dataNascimento nao pode ser nulo
-        if (values.dataNascimento === undefined || values.dataNascimento === null) {
+        if (cliente.dataNascimento === undefined || cliente.dataNascimento === null) {
             listaErros.push('Data de Nascimento inválido');
             valido = false;
         }
 
         //Masculino ou Feminino (Avaliando a possibilidade de incluir Helicóptero Apache)
-        if (values.sexo !== 'Masculino' && values.sexo !== 'Feminino') {
+        if (cliente.sexo !== 'Masculino' && cliente.sexo !== 'Feminino') {
 			listaErros.push('Sexo inválido');
         	valido = false;
         }
 
         //cep tem que ter 8 caracteres e nao pode ser nulo
-        values.cep.replace(/[-]/g, "");
-        if (values.cep === '' || values.cep.length !== 8) {
+        cliente.cep = cliente.cep.replace(/[-]/g, "");
+        if (cliente.cep === '' || cliente.cep.length !== 8) {
             listaErros.push('CEP inválido');
             valido = false;
         }
 
         //logradouro nao pode ser nulo ou sem caracteres
-        if (values.logradouro === '' || values.logradouro.length <= 0) {
+        if (cliente.logradouro === '' || cliente.logradouro.length <= 0) {
             listaErros.push('Logradouro inválido');
             valido = false;
         }
 
         //numero da casa, 0 = sem numero
-        if (values.numero < 0) {
+        if (cliente.numero < 0) {
             listaErros.push('Numero não pode ser negativo');
             valido = false;
         }
 
         //complemento pode ser vazio mas nao invalido
-        if (values.complemento.length < 0) {
+        if (cliente.complemento.length < 0) {
             listaErros.push('Complemento inválido');
             valido = false;
         }
 
         //bairro nao pode ser nulo ou sem caracteres
-        if (values.bairro === '' || values.bairro.length <= 0) {
+        if (cliente.bairro === '' || cliente.bairro.length <= 0) {
             listaErros.push('Bairro inválido');
             valido = false;
         }
 
         //cidade nao pode ser nulo ou sem caracteres
-        if (values.cidade === '' || values.cidade.length <= 0) {
+        if (cliente.cidade === '' || cliente.cidade.length <= 0) {
             listaErros.push('Cidade inválido');
             valido = false;
         }
 
         //UF nao pode ser nulo, tem que ter 2 caracteres
-        if( values.uf === null || 
-            values.uf === undefined || 
-            values.uf === '' ||
-            values.uf.length !== 2
+        if( cliente.uf === null || 
+            cliente.uf === undefined || 
+            cliente.uf === '' ||
+            cliente.uf.length !== 2
         ) {
             listaErros.push('UF nulo ou inválido');
             valido = false;
         }
         //e tem que ser existente
-        if(!this.ufList.includes(values.uf)) {
+        if(!this.ufList.includes(cliente.uf)) {
             listaErros.push('UF não existente');
             valido = false;
         }
 
         //saldo nao pode ser negativo ou zero
-        if(values.saldo <= 0) {
+        if(cliente.saldo <= 0) {
             listaErros.push('Saldo nao pode ser zero ou negativo');
             valido = false;
         }
@@ -244,6 +244,9 @@ class FormClienteComponent extends Component {
             tempVar2 = event.target.checked;
         } else {
             if(event.target.type === "number") {
+                if(event.target.value === undefined || event.target.value === '') {
+                    event.target.value = 0;
+                }
                 tempVar2 = Number.parseInt(event.target.value);
             } else {
                 tempVar2 = event.target.value;
