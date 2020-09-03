@@ -52,14 +52,27 @@ class FormClienteComponent extends Component {
         
         if(!this.novoCliente) {
             ClienteDataService.buscarCliente(this.props.match.params.id)
-            .then(response => {
+            .then(async (response) => {
                 if(response.data === null) {
                     this.voltar();
                 } else {
-                    if(response.data.dataNascimento === null)
+                    if(response.data.length !== undefined) {
+                        response.data = response.data[0];
+                    }
+                    if(response.data.dataNascimento === null) {
                         response.data.dataNascimento = new Date().toISOString().substring(0,10);
-                    if(response.data.uf === null)
+                    } else {
+                        if(response.data.dataNascimento === undefined) {
+                            response.data.dataNascimento = response.data.data_nascimento;
+                        }
+                        response.data.dataNascimento = response.data.dataNascimento.substring(0,10);
+                    }
+                    if(response.data.uf === null) {
                         response.data.uf = '';
+                    }
+                    if(response.data.ativo.type === "Buffer") {
+                        response.data.ativo = (response.data.ativo.data[0] === 1 ? true : false);
+                    }
 
                     this.setState({cliente: response.data});
                 }
@@ -215,22 +228,10 @@ class FormClienteComponent extends Component {
         event.preventDefault();
 
         if(this.validate(this.state.cliente)) {
-            ClienteDataService.novoCliente(this.state.cliente)
-            .then(async res => {
-                let status = await res.data;
-                if(status === 'CREATED' || status === 'OK') {
+            ClienteDataService.salvarCliente(this.state.cliente, this.novoCliente)
+            .then(res => {
+                if(res.status === 'CREATED' || res.status === 'OK' || res.status === 200 || res.status === 201) {
                     this.voltar();
-                } else {
-                    let erro = [];
-                    if(status === 'CONFLICT') {
-                        erro.push('<Backend> Cliente ja existente no sistema');
-                    }
-                    if(status === 'BAD_REQUEST') {
-                        erro.push('<Backend> Cliente inválido');
-                    }
-                    this.setState({
-                        erros: erro
-                    });
                 }
             });
         }

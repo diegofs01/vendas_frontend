@@ -12,8 +12,12 @@ class ProdutoDataService {
         return axios.get(`${PRODUTO_API_URL}/${codigo}`);
     }
 
-    novoProduto(produto) {
-        return axios.post(`${PRODUTO_API_URL}/novo`, produto);
+    salvarProduto(produto, novo) {
+        if(novo) {
+            return axios.post(`${PRODUTO_API_URL}/novo`, produto);
+        } else {
+            return axios.put(`${PRODUTO_API_URL}/editar`, produto);
+        }
     }
 }
 

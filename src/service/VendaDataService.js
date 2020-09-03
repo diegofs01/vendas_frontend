@@ -12,9 +12,13 @@ class VendaDataService {
         return axios.get(`${VENDA_API_URL}/${id}`);
     }
 
-    novoVenda(venda) {
+    salvarVenda(venda) {
         venda.dataVenda = new Date(venda.dataVenda).toISOString();
-        return axios.post(`${VENDA_API_URL}/novo`, venda);
+        if(venda.id === -1) {
+            return axios.post(`${VENDA_API_URL}/novo`, venda);
+        } else {
+            return axios.put(`${VENDA_API_URL}/editar`, venda);
+        }
     }
 
     excluirItem(idItem) {

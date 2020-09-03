@@ -36,6 +36,9 @@ class FormProdutoComponent extends Component {
         if(!this.novoProduto) {
             ProdutoDataService.buscarProduto(this.props.match.params.codigo)
             .then(response => {
+                if(response.data.length !== undefined) {
+                    response.data = response.data[0];
+                }
                 this.setState({produto: response.data});
             });
         }
@@ -44,7 +47,7 @@ class FormProdutoComponent extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        ProdutoDataService.novoProduto(this.state.produto)
+        ProdutoDataService.salvarProduto(this.state.produto, this.novoProduto)
         .then(() => this.voltar());
     }
 

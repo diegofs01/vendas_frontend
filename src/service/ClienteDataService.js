@@ -12,10 +12,14 @@ class ClienteDataService {
         return axios.get(`${CLIENTE_API_URL}/${cpf}`);
     }
 
-    novoCliente(cliente) {
+    salvarCliente(cliente, novo) {
         cliente.cpf = cliente.cpf.replace(/[-.]/g, "");
         cliente.cep = cliente.cep.replace(/[-]/g, "");
-        return axios.post(`${CLIENTE_API_URL}/novo`, cliente);
+        if(novo) {
+            return axios.post(`${CLIENTE_API_URL}/novo`, cliente);
+        } else {
+            return axios.put(`${CLIENTE_API_URL}/editar`, cliente);
+        }
     }
 
     ativarCliente(cpf) {

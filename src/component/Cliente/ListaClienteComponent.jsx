@@ -33,6 +33,11 @@ class ListaClienteComponent extends Component {
         ClienteDataService.listarClientes()
         .then(
             response => {
+                response.data.forEach(cliente => {
+                    if(cliente.ativo.type === "Buffer") {
+                        cliente.ativo = (cliente.ativo.data[0] === 1 ? true : false);
+                    }
+                });
                 this.setState({clientes: response.data});
             }
         );
@@ -48,12 +53,11 @@ class ListaClienteComponent extends Component {
 
     ativarCliente(cpf) {
         ClienteDataService.ativarCliente(cpf.replace(/[-.]/g, ""))
-        .then(async res => {
-            let status = await res.data;
-            if(status === 'OK') {
+        .then(res => {
+            if(res.status === 'OK' || res.status === 200) {
                 this.atualizarListaClientes();  
             } 
-            if(status === 'BAD_REQUEST') {
+            if(res.status === 'BAD_REQUEST' || res.status === 400) {
                 alert('Não foi possivel ativar o cliente');
             }
             this.handleMenuClose("MenuClose");
@@ -63,12 +67,11 @@ class ListaClienteComponent extends Component {
 
     desativarCliente(cpf) {
         ClienteDataService.desativarCliente(cpf.replace(/[-.]/g, ""))
-        .then(async res => {
-            let status = await res.data;
-            if(status === 'OK') {
+        .then(res => {
+            if(res.status === 'OK' || res.status === 200) {
                 this.atualizarListaClientes();
             } 
-            if(status === 'BAD_REQUEST') {
+            if(res.status === 'BAD_REQUEST' || res.status === 400) {
                 alert('Não foi possivel desativar o cliente');
             }
             this.handleMenuClose("MenuClose");

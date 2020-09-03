@@ -23,7 +23,7 @@ class FormVendaComponent extends Component {
         this.state = {
             novaVenda: true,
             venda: {
-                id: 0,
+                id: -1,
                 dataVenda: '',
                 cliente: {
                     cpf: '',
@@ -97,7 +97,7 @@ class FormVendaComponent extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        VendaDataService.novoVenda(this.state.venda)
+        VendaDataService.salvarVenda(this.state.venda)
         .then(
             this.state.itensExcluidos.forEach(item => {
                 VendaDataService.excluirItem(item.idItem);
