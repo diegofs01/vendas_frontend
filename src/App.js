@@ -5,7 +5,7 @@ import interceptors from './interceptors';
 import { createBrowserHistory } from 'history';
 import VendasApp from './component/VendasApp';
 import Login from './component/Login';
-import CriarConta from './component/CriarConta';
+import CriarUsuario from './component/CriarUsuario';
 import { Router, Route, Switch, Redirect } from 'react-router-dom';
 import ListaClienteComponent from './component/Cliente/ListaClienteComponent';
 import FormClienteComponent from './component/Cliente/FormClienteComponent';
@@ -81,7 +81,7 @@ function App() {
       <Router history={history}>
           <Switch>
               <Route path="/login" exact component={Login}/>
-              <Route path="/criarConta" exact component={CriarConta}/>
+              <Route path="/criarUsuario" exact component={CriarUsuario}/>
 
               <AuthenticatedRoute path="/" exact component={VendasApp}/>
               <AuthenticatedRoute path="/index" exact component={VendasApp}/>

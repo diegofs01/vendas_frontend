@@ -87,6 +87,7 @@ class Login extends Component {
               </Grid>
             </Paper>
           </form>
+          <Button variant="contained" color="secondary" onClick={() => this.props.history.push("/criarUsuario")}>Criar Usuário</Button>
         </div>
       </div>
     );
